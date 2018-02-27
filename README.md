@@ -1,5 +1,4 @@
 # pixivBookmarkScraper
-===========================
 
 * python3's lxml and requests is needed
 
