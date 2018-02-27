@@ -1,4 +1,4 @@
-import urllib
+import threading
 from lxml import etree
 import requests
 import re
@@ -13,7 +13,6 @@ def login(session, username, passwd):
     logintext = s.get("https://accounts.pixiv.net/login").text
     get_key = re.compile('''(?<="post_key" value=")\w+''')
     post_key = get_key.search(logintext).group(0)
-    print(post_key)
     data["post_key"] = post_key
     data["pixiv_id"] = username
     data["password"] = passwd
@@ -39,7 +38,6 @@ def write_image(url, headers, title):
 def ImageURL(session, url):
     s=session
     url="https://www.pixiv.net/"+url
-    print(url)
     url_content = (etree.HTML(s.get(url).content))
     is_manga = url_content.xpath('//*[@id="wrapper"]/div[1]/div[1]/div/div[4]/a[2]/@data-click-label')
     if is_manga==[]:
@@ -71,17 +69,21 @@ def urlList(session, page_num):
 
 def pixiv():
     s = requests.Session()
-    name = input("pls input username:")
-    passwd = input("pls input passwd:")
+    name = input("please input username:")
+    passwd = input("please input passwd:")
     login(s, name, passwd)
-    start_page = input("pls input start page:")
-    end_page = input("pls input end page:")
+    start_page = input("please input start page:")
+    end_page = input("please input end page:")
     linklist = []
     for page in range(int(start_page), int(end_page) + 1):
         linklist += urlList(s, page)
 
-    for link in linklist:
-        downloadImage(s, link)
+    # for link in linklist:
+    #     downloadImage(s, link)
+    for i in range(len(linklist)):
+        thread = threading.Thread(target = downloadImage, args = (s,linklist[i]))
+        thread.start()
+    
 
 
 if __name__=="__main__":
